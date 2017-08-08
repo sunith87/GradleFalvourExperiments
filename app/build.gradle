@@ -1,0 +1,88 @@
+apply plugin: 'com.android.application'
+
+BuildProperties defaultProperties = BuildProperties.load('/experiments/experiment.properties', project)
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion "26.0.0"
+    defaultConfig {
+        applicationId "build.uk.buildexperiments"
+        minSdkVersion 15
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    productFlavors {
+
+        String COUNTRY = "country"
+        String ENVIRONMENT = "environment"
+        String CURRENCY = "currency"
+
+        flavorDimensions COUNTRY, ENVIRONMENT, CURRENCY
+
+        ie {
+            buildFlavor(COUNTRY, defaultProperties, it)
+        }
+
+        gb {
+            buildFlavor(COUNTRY, defaultProperties, it)
+        }
+
+        production {
+            buildFlavor(ENVIRONMENT, defaultProperties, it)
+        }
+
+        uat {
+            buildFlavor(ENVIRONMENT, defaultProperties, it)
+        }
+
+        dollar {
+            buildFlavor(CURRENCY, defaultProperties, it)
+        }
+
+        pound {
+            buildFlavor(CURRENCY, defaultProperties, it)
+        }
+    }
+
+    variantFilter { variant ->
+        def dim = variant.flavors.collectEntries {
+            [(it.productFlavor.dimension): it.productFlavor.name]
+        }
+
+        if (dim.country == 'ie' && dim.currency == 'pound') {
+            variant.setIgnore(true);
+        }
+
+        if (dim.country == 'gb' && dim.currency == 'dollar') {
+            variant.setIgnore(true);
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:26.+'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    testCompile 'junit:junit:4.12'
+}
+
+
+
+def buildFlavor(dimension, defaultProperties, productFlavor) {
+    productFlavor.dimension dimension
+    println("flavor - ${productFlavor.name}" )
+    defaultProperties = BuildProperties.load("/experiments/${productFlavor.name}.flavor", project)
+    defaultProperties.configure(productFlavor)
+}
