@@ -131,7 +131,7 @@ class BuildProperties {
         }
         File file = new File(fullPath)
         if (!file.exists()) {
-            throw new RuntimeException("You need to put a property file containing the credentials needed for the app in ${file.getAbsolutePath()}")
+            throw new RuntimeException("Error property file ${file.getAbsolutePath()} not found")
         }
         new BuildProperties(file, project)
     }
